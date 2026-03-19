@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import csv
 import os
 import struct
 import subprocess
@@ -217,6 +218,16 @@ def run_graph_builder(
     subprocess.run(cmd, check=True)
 
 
+def append_result_csv(csv_path: str, tag: str, alpha: float, fgw2: float, fgw: float):
+    header = ["tag", "alpha", "fgw2", "fgw"]
+    need_header = (not os.path.exists(csv_path)) or os.path.getsize(csv_path) == 0
+    with open(csv_path, "a", newline="") as f:
+        writer = csv.writer(f)
+        if need_header:
+            writer.writerow(header)
+        writer.writerow([tag, alpha, f"{fgw2:.12f}", f"{fgw:.12f}"])
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Compute fused Gromov-Wasserstein (fGW) between two extremum graphs."
@@ -264,6 +275,8 @@ def main():
 
     parser.add_argument("--alpha", type=float, default=0.5, help="FGW tradeoff alpha in [0,1]")
     parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--save-csv", type=str, default=None, help="Append result row to CSV file")
+    parser.add_argument("--tag", type=str, default="", help="Optional tag field used with --save-csv")
     parser.add_argument(
         "--no-normalize-structure",
         action="store_true",
@@ -313,6 +326,11 @@ def main():
     fgw = float(np.sqrt(max(0.0, fgw2)))
     print(f"FGW2(alpha={args.alpha}): {fgw2:.12f}")
     print(f"FGW(alpha={args.alpha}): {fgw:.12f}")
+
+    if args.save_csv:
+        append_result_csv(args.save_csv, args.tag, args.alpha, fgw2, fgw)
+        if args.verbose:
+            print(f"saved_csv={args.save_csv}")
 
 
 if __name__ == "__main__":
