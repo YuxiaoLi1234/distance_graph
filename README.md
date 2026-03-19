@@ -93,6 +93,8 @@ g++ -O3 -std=c++17 construct_extremum_graph.cpp -o construct_extremum_graph
   --alpha 0.5 --verbose
 ```
 
+如果你习惯误写参数，`--gragh2-files` 也兼容。
+
 ### 方式 3：从两个 scalar 自动“建图+计算”
 
 ```bash
@@ -103,6 +105,37 @@ g++ -O3 -std=c++17 construct_extremum_graph.cpp -o construct_extremum_graph
   --lut ./LUT.bin \
   --out1 ./graph_A --out2 ./graph_B \
   --alpha 0.5 --verbose
+```
+
+### 单次结果保存到 CSV
+
+```bash
+./.venv312/bin/python compute_fgw.py \
+  --graph1-files ./graph_A/nodes.bin ./graph_A/edges.bin \
+  --graph2-files ./graph_B/nodes.bin ./graph_B/edges.bin \
+  --alpha 0.5 \
+  --save-csv ./fgw_results.csv \
+  --tag A_vs_B
+```
+
+`fgw_results.csv` 列为：`data1,data2,tag,alpha,fgw2,fgw`。
+
+其中 `data1/data2` 会自动从输入来源推断（图目录名、nodes 文件名或 scalar 文件名）。
+
+### 批量计算并输出 CSV
+
+先准备 `pairs.csv`：
+
+```csv
+nodes1,edges1,nodes2,edges2,alpha,tag
+./graph_A/nodes.bin,./graph_A/edges.bin,./graph_B/nodes.bin,./graph_B/edges.bin,0.5,A_vs_B
+./graph_A/nodes.bin,./graph_A/edges.bin,./graph_C/nodes.bin,./graph_C/edges.bin,0.5,A_vs_C
+```
+
+运行：
+
+```bash
+./.venv312/bin/python batch_fgw.py --pairs ./pairs.csv --out ./fgw_batch.csv --verbose
 ```
 
 ---
