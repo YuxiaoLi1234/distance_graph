@@ -1,0 +1,20 @@
+# format:
+# name Nx Ny Nz full_path
+
+# at
+at 177 95 48 /fs/ess/PAS2402/yuxiao/at.bin
+
+# vortex
+vortex 128 128 128 /fs/ess/PAS2402/yuxiao/vortex.bin
+
+# QMCPack
+QMCPack 69 69 115 /fs/ess/PAS2402/yuxiao/QMCPack.bin
+
+# tacc_turbulence
+tacc_turbulence 256 256 256 /fs/ess/PAS2402/yuxiao/tacc_turbulence.bin
+
+# hcci_oh_log
+hcci_oh_log 560 560 560 /fs/ess/PAS2402/yuxiao/hcci_oh_log.bin
+
+# NYXlog
+NYXlog 512 512 512 /fs/ess/PAS2402/yuxiao/NYXlog.bin

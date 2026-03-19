@@ -1,0 +1,4 @@
+dataset,nx,ny,nz,ori_path,cmp_path,decp_path,cmp_size_bytes,decp_size_bytes,compress_time_s,decompress_time_s,fgw_csv,status,error
+at,177,95,48,/fs/ess/PAS2402/yuxiao/at.bin,./pipeline_rel_1e-4/at/at_rel_1e-04.sz3,./pipeline_rel_1e-4/at/at_rel_1e-04_decp.bin,209043,6456960,0.184212,0.040101,./pipeline_rel_1e-4/fgw_results.csv,failed,[Errno 2] No such file or directory: './.venv312/bin/python'
+at,177,95,48,/fs/ess/PAS2402/yuxiao/at.bin,./pipeline_rel_1e-4/at/at_rel_1e-04.sz3,./pipeline_rel_1e-4/at/at_rel_1e-04_decp.bin,209043,6456960,0.043248,0.040896,./pipeline_rel_1e-4/fgw_results.csv,ok,
+at,177,95,48,/fs/ess/PAS2402/yuxiao/at.bin,./pipeline_rel_1e-4/at/at_rel_1e-04.sz3,./pipeline_rel_1e-4/at/at_rel_1e-04_decp.bin,209043,6456960,0.045689,0.041169,./pipeline_rel_1e-4/fgw_results.csv,ok,
