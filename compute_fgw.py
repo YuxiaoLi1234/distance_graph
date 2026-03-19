@@ -118,7 +118,7 @@ def normalize_matrix_nonnegative(m: np.ndarray) -> np.ndarray:
     return out
 
 
-def build_structural_matrix(graph: GraphData) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def build_structural_matrix(graph: GraphData, use_value_feature: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     n = graph.node_ids.shape[0]
     id_to_idx: Dict[int, int] = {int(node_id): i for i, node_id in enumerate(graph.node_ids.tolist())}
 
@@ -145,7 +145,8 @@ def build_structural_matrix(graph: GraphData) -> Tuple[np.ndarray, np.ndarray, n
         # no edges: fallback to identity-like distances
         C = np.zeros((n, n), dtype=np.float64)
         p = np.full(n, 1.0 / n, dtype=np.float64)
-        feat = normalize_columns(np.hstack([graph.coords, graph.values[:, None]]))
+        feat_raw = graph.coords if not use_value_feature else np.hstack([graph.coords, graph.values[:, None]])
+        feat = normalize_columns(feat_raw)
         return C, p, feat
 
     mat = csr_matrix((vals, (rows, cols)), shape=(n, n), dtype=np.float64)
@@ -164,7 +165,8 @@ def build_structural_matrix(graph: GraphData) -> Tuple[np.ndarray, np.ndarray, n
     else:
         p = np.full(n, 1.0 / n, dtype=np.float64)
 
-    feat = normalize_columns(np.hstack([graph.coords, graph.values[:, None]]))
+    feat_raw = graph.coords if not use_value_feature else np.hstack([graph.coords, graph.values[:, None]])
+    feat = normalize_columns(feat_raw)
     return C, p, feat
 
 
@@ -174,9 +176,10 @@ def compute_fgw(
     alpha: float,
     verbose: bool,
     normalize_structure: bool,
+    use_value_feature: bool,
 ):
-    C1, p1, feat1 = build_structural_matrix(graph1)
-    C2, p2, feat2 = build_structural_matrix(graph2)
+    C1, p1, feat1 = build_structural_matrix(graph1, use_value_feature=use_value_feature)
+    C2, p2, feat2 = build_structural_matrix(graph2, use_value_feature=use_value_feature)
 
     if normalize_structure:
         C1 = normalize_matrix_nonnegative(C1)
@@ -312,6 +315,11 @@ def main():
         action="store_true",
         help="Disable normalization of structural distance matrices before FGW.",
     )
+    parser.add_argument(
+        "--no-value-feature",
+        action="store_true",
+        help="Do not use node scalar value in feature vectors (use only coordinates).",
+    )
 
     args = parser.parse_args()
 
@@ -361,6 +369,7 @@ def main():
         alpha=args.alpha,
         verbose=args.verbose,
         normalize_structure=(not args.no_normalize_structure),
+        use_value_feature=(not args.no_value_feature),
     )
     fgw = float(np.sqrt(max(0.0, fgw2)))
     print(f"FGW2(alpha={args.alpha}): {fgw2:.12f}")
