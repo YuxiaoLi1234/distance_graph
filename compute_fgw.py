@@ -218,14 +218,44 @@ def run_graph_builder(
     subprocess.run(cmd, check=True)
 
 
-def append_result_csv(csv_path: str, tag: str, alpha: float, fgw2: float, fgw: float):
-    header = ["tag", "alpha", "fgw2", "fgw"]
+def _derive_name_from_graph_dir(graph_dir: str) -> str:
+    graph_dir = os.path.normpath(graph_dir)
+    base = os.path.basename(graph_dir)
+    return base if base else graph_dir
+
+
+def _derive_name_from_nodes_file(nodes_path: str) -> str:
+    nodes_path = os.path.normpath(nodes_path)
+    base = os.path.basename(nodes_path)
+    if base.lower() == "nodes.bin":
+        parent = os.path.basename(os.path.dirname(nodes_path))
+        return parent if parent else "nodes"
+    stem, _ = os.path.splitext(base)
+    return stem
+
+
+def _derive_name_from_scalar(scalar_path: str) -> str:
+    base = os.path.basename(os.path.normpath(scalar_path))
+    stem, _ = os.path.splitext(base)
+    return stem
+
+
+def append_result_csv(
+    csv_path: str,
+    data1: str,
+    data2: str,
+    tag: str,
+    alpha: float,
+    fgw2: float,
+    fgw: float,
+):
+    header = ["data1", "data2", "tag", "alpha", "fgw2", "fgw"]
     need_header = (not os.path.exists(csv_path)) or os.path.getsize(csv_path) == 0
     with open(csv_path, "a", newline="") as f:
         writer = csv.writer(f)
         if need_header:
             writer.writerow(header)
-        writer.writerow([tag, alpha, f"{fgw2:.12f}", f"{fgw:.12f}"])
+        writer.writerow([data1, data2, tag, alpha, f"{fgw2:.12f}", f"{fgw:.12f}"])
 
 
 def main():
@@ -285,12 +315,19 @@ def main():
 
     args = parser.parse_args()
 
+    data_name_1 = ""
+    data_name_2 = ""
+
     if args.graph1_files and args.graph2_files:
         g1 = load_graph_from_files(args.graph1_files[0], args.graph1_files[1])
         g2 = load_graph_from_files(args.graph2_files[0], args.graph2_files[1])
+        data_name_1 = _derive_name_from_nodes_file(args.graph1_files[0])
+        data_name_2 = _derive_name_from_nodes_file(args.graph2_files[0])
     elif args.graph1 and args.graph2:
         g1 = load_graph(args.graph1)
         g2 = load_graph(args.graph2)
+        data_name_1 = _derive_name_from_graph_dir(args.graph1)
+        data_name_2 = _derive_name_from_graph_dir(args.graph2)
     else:
         required = [
             args.scalar1,
@@ -312,6 +349,8 @@ def main():
 
         g1 = load_graph(args.out1)
         g2 = load_graph(args.out2)
+        data_name_1 = _derive_name_from_scalar(args.scalar1)
+        data_name_2 = _derive_name_from_scalar(args.scalar2)
 
     if not (0.0 <= args.alpha <= 1.0):
         raise ValueError("alpha must be in [0,1]")
@@ -328,7 +367,7 @@ def main():
     print(f"FGW(alpha={args.alpha}): {fgw:.12f}")
 
     if args.save_csv:
-        append_result_csv(args.save_csv, args.tag, args.alpha, fgw2, fgw)
+        append_result_csv(args.save_csv, data_name_1, data_name_2, args.tag, args.alpha, fgw2, fgw)
         if args.verbose:
             print(f"saved_csv={args.save_csv}")
 
