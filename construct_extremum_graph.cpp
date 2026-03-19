@@ -118,12 +118,11 @@ inline std::array<int, 3> idx_to_xyz(int idx, int nx, int ny) {
 }
 
 inline double step_distance(int a, int b, int nx, int ny) {
-    const auto xyz_a = idx_to_xyz(a, nx, ny);
-    const auto xyz_b = idx_to_xyz(b, nx, ny);
-    const int dx = xyz_b[0] - xyz_a[0];
-    const int dy = xyz_b[1] - xyz_a[1];
-    const int dz = xyz_b[2] - xyz_a[2];
-    return std::sqrt(static_cast<double>(dx * dx + dy * dy + dz * dz));
+    (void)a;
+    (void)b;
+    (void)nx;
+    (void)ny;
+    return 1.0;
 }
 
 std::vector<int> gather_neighbors(int idx, int nx, int ny, int nz) {
@@ -607,7 +606,7 @@ int main(int argc, char **argv) {
             if (!is_less_shared(nb, saddle_grid_id, scalar[nb], scalar[saddle_grid_id])) {
                 continue;
             }
-            const TraceResult tr = trace_ascending_to_max(nb, scalar, lut, nx, ny, nz);
+            const TraceResult tr = trace_descending_to_min(nb, scalar, lut, nx, ny, nz);
             if (!tr.ok) {
                 continue;
             }
@@ -618,10 +617,8 @@ int main(int argc, char **argv) {
             const int max_node_id = it->second;
             const int edge_type = 0;
             const EdgeKey key{saddle_node_id, max_node_id, edge_type};
-            auto old = best_edge_weight.find(key);
-            if (old == best_edge_weight.end() || tr.length < old->second) {
-                best_edge_weight[key] = tr.length;
-            }
+            (void)tr;
+            best_edge_weight[key] = 1.0;
         }
     }
 
@@ -633,7 +630,7 @@ int main(int argc, char **argv) {
             if (!is_larger_shared(nb, saddle_grid_id, scalar[nb], scalar[saddle_grid_id])) {
                 continue;
             }
-            const TraceResult tr = trace_descending_to_min(nb, scalar, lut, nx, ny, nz);
+            const TraceResult tr = trace_ascending_to_max(nb, scalar, lut, nx, ny, nz);
             if (!tr.ok) {
                 continue;
             }
@@ -644,10 +641,8 @@ int main(int argc, char **argv) {
             const int min_node_id = it->second;
             const int edge_type = 1;
             const EdgeKey key{saddle_node_id, min_node_id, edge_type};
-            auto old = best_edge_weight.find(key);
-            if (old == best_edge_weight.end() || tr.length < old->second) {
-                best_edge_weight[key] = tr.length;
-            }
+            (void)tr;
+            best_edge_weight[key] = 1.0;
         }
     }
 
