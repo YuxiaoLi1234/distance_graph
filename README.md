@@ -12,12 +12,15 @@
 - `construct_extremum_graph.cpp`：构图程序源码（内部支持分类 + 建图）
 - `construct_extremum_graph`：构图可执行文件
 - `compute_fgw.py`：fGW 计算脚本
+- `compare_graphs.py`：对比两张 extremum graph 的差异明细
 - `LUT.bin`：分类所需查找表
 
 输出图文件格式：
 
 - `nodes.bin`：每条记录为 `[int id, int grid_id, int type, int x, int y, int z, double value]`
 - `edges.bin`：每条记录为 `[int u, int v, int edge_type, double weight]`
+
+当前实现中，`weight` 固定为 `1`（所有边统一权重）。
 
 其中：
 - `type` 映射：`0=min, 1=max, 2=saddle1, 3=saddle2`
@@ -114,6 +117,7 @@ g++ -O3 -std=c++17 construct_extremum_graph.cpp -o construct_extremum_graph
   --graph1-files ./graph_A/nodes.bin ./graph_A/edges.bin \
   --graph2-files ./graph_B/nodes.bin ./graph_B/edges.bin \
   --alpha 0.5 \
+  --no-value-feature \
   --save-csv ./fgw_results.csv \
   --tag A_vs_B
 ```
@@ -154,9 +158,35 @@ nodes1,edges1,nodes2,edges2,alpha,tag
 --no-normalize-structure
 ```
 
+默认 feature 使用 `坐标 + value`。如果你不想计入 node 的 value：
+
+```bash
+--no-value-feature
+```
+
 ---
 
-## 6) 常见问题
+## 6) 打印两张图哪里不同
+
+可以用 `compare_graphs.py` 对比节点和边的差异：
+
+```bash
+./.venv312/bin/python compare_graphs.py \
+  --graph1-files ./graph_A/nodes.bin ./graph_A/edges.bin \
+  --graph2-files ./graph_B/nodes.bin ./graph_B/edges.bin \
+  --topk 20
+```
+
+输出包含：
+- 节点数量与类型分布差异
+- 仅在一侧出现的节点（按 `grid_id`）
+- 相同 `grid_id` 上的 `type` 变化
+- `value` 差异最大的节点
+- 边数量、缺失边和边权重差异
+
+---
+
+## 7) 常见问题
 
 ### Q1: `filesystem error: in create_directories: File exists ["./LUT.bin"]`
 
@@ -178,7 +208,7 @@ nodes1,edges1,nodes2,edges2,alpha,tag
 
 ---
 
-## 7) 最小可复现实验
+## 8) 最小可复现实验
 
 ```bash
 # 1) 生成两张图
